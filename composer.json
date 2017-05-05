@@ -1,0 +1,12 @@
+{
+  "name": "menmo/better-internal-link-search",
+  "description": "Better Internal Link Search improves the default internal link searching feature in a number of ways, making it faster and easier to find the content you want to link up.",
+  "keywords": ["wordpress", "plugin", "interal links"],
+  "type": "wordpress-plugin",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:menmo/better-internal-link-search.git"
+    }
+  ]
+}
