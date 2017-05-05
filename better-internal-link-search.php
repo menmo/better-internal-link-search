@@ -1,20 +1,23 @@
 <?php
 /**
- * Plugin Name: Better Internal Link Search
- * Plugin URI: http://wordpress.org/extend/plugins/better-internal-link-search/
- * Description: Improve the internal link popup functionality with time saving enhancements and features.
- * Version: 1.2.12
- * Author: Blazer Six
- * Author URI: http://www.blazersix.com/
- * License: GPL-2.0+
- * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: better-internal-link-search
- * Domain Path: /languages
+ * Better Internal Link Search
  *
- * @package BetterInternalLinkSearch
- * @author Brady Vercher <brady@blazersix.com>
- * @copyright Copyright (c) 2013, Blazer Six, Inc.
- * @license http://www.gnu.org/licenses/gpl-2.0.html
+ * @package   BetterInternalLinkSearch
+ * @author    Brady Vercher
+ * @link      https://www.cedaro.com/
+ * @copyright Copyright (c) 2016 Cedaro, Inc.
+ * @license   GPL-2.0+
+ *
+ * @wordpress-plugin
+ * Plugin Name: Better Internal Link Search
+ * Plugin URI:  https://wordpress.org/plugins/better-internal-link-search/?utm_source=wordpress-plugin&utm_medium=link&utm_content=better-internal-link-search-plugin-uri&utm_campaign=plugins
+ * Description: Improve the internal link popup functionality with time saving enhancements and features.
+ * Version:     1.3.0
+ * Author:      Cedaro
+ * Author URI:  https://www.cedaro.com/?utm_source=wordpress-plugin&utm_medium=link&utm_content=better-internal-link-search-author-uri&utm_campaign=plugins
+ * License:     GPL-2.0+
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: better-internal-link-search
  */
 
 /**
@@ -53,8 +56,6 @@ class Better_Internal_Link_Search {
 	 * @since 1.0.0
 	 */
 	public static function load() {
-		self::load_textdomain();
-
 		// Load settings.
 		include( BETTER_INTERNAL_LINK_SEARCH_DIR . 'includes/settings.php' );
 		Better_Internal_Link_Search_Settings::load();
@@ -77,15 +78,6 @@ class Better_Internal_Link_Search {
 
 		// Upgrade routine.
 		add_action( 'admin_init', array( __CLASS__, 'upgrade' ) );
-	}
-
-	/**
-	 * Load the plugin language files.
-	 *
-	 * @since 1.2.3
-	 */
-	public static function load_textdomain() {
-		load_plugin_textdomain( 'better-internal-link-search', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 	/**
@@ -112,6 +104,7 @@ class Better_Internal_Link_Search {
 			);
 
 			if ( in_array( $_POST['action'], $actions ) ) {
+				add_filter( 'wp_link_query_args', array( __CLASS__, 'unsupress_posts_search_filters' ) );
 				add_filter( 'posts_search', array( __CLASS__, 'limit_search_to_title' ), 10, 2 );
 				add_action( 'pre_get_posts', array( __CLASS__, 'set_query_vars' ) );
 			}
@@ -128,7 +121,7 @@ class Better_Internal_Link_Search {
 	public static function set_query_vars( $query ) {
 		if ( 'bils-get-link-search-results' == $_POST['action'] || 'wp-link-ajax' == $_POST['action'] ) {
 			// Scheduled post concept from Evan Solomon's plugin.
-			// http://wordpress.org/extend/plugins/internal-linking-for-scheduled-posts/
+			// https://wordpress.org/plugins/internal-linking-for-scheduled-posts/
 			$post_status = (array) $query->get( 'post_status' );
 			$post_status[] = 'future';
 			if ( current_user_can( 'read_private_posts' ) ) {
@@ -175,6 +168,19 @@ class Better_Internal_Link_Search {
 		}
 
 		return $search;
+	}
+
+	/**
+	 * Unsupress posts search filters.
+	 *
+	 * The 'posts_search' filter was disabled for internal link searches in
+	 * https://core.trac.wordpress.org/ticket/35594
+	 *
+	 * @since 1.3.0
+	 */
+	public static function unsupress_posts_search_filters( $args ) {
+		$args['suppress_filters'] = false;
+		return $args;
 	}
 
 	/**
